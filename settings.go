@@ -30,6 +30,7 @@ type Settings struct {
 	Log          LogSettings       `toml:"log"`
 	Cache        CacheSettings     `toml:"cache"`
 	Hosts        HostsSettings     `toml:"hosts"`
+	Http         HttpSettings      `toml:"http"`
 }
 
 type ResolvSettings struct {
@@ -81,6 +82,12 @@ type HostsSettings struct {
 	RedisKey    string `toml:"redis-key"`
 	TTL         uint32 `toml:"ttl"`
 }
+
+type HttpSettings struct {
+	Remote   string
+	Resolver string
+}
+
 
 func init() {
 

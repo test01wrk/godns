@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -91,19 +92,25 @@ func (r *Resolver) Lookup(net string, req *dns.Msg) (message *dns.Msg, err error
 }
 
 func (r *Resolver) LookupHttp(net string, req *dns.Msg) (message *dns.Msg, err error) {
-	response, _, err := http.Get("http://119.254.210.77:43402/223.5.5.5:53/baidu.com/a")
-	if err == nil {
-		defer response.Body.Close()
-		contents, err := ioutil.ReadAll(response.Body)
+	if len(req.Question) > 0 {
+		q := req.Question[0]
+		url := []string{settings.Http.Remote, settings.Http.Resolver, UnFqdn(q.Name), dns.Type(q.Qtype).String()}
+		response, err := http.Get(strings.Join(url, "/"))
 		if err == nil {
-			m := new(dns.Msg)
-			
-		} else {
-			return nil, err
+			defer response.Body.Close()
+			body, err := ioutil.ReadAll(response.Body)
+			if err == nil {
+				m := new(dns.Msg)
+				data, err := base64.StdEncoding.DecodeString(string(body))
+				if err == nil {
+					m.Unpack(data)
+					m.Id = req.Id
+					return m, nil
+				}
+			}
 		}
-	} else {
-		return nil, err
 	}
+	return nil, err
 }
 
 // Namservers return the array of nameservers, with port number appended.
