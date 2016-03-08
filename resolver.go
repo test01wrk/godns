@@ -97,19 +97,25 @@ func (r *Resolver) LookupHttp(net string, req *dns.Msg) (message *dns.Msg, err e
 		q := req.Question[0]
 		url := []string{settings.Http.Remote, settings.Http.Resolver, UnFqdn(q.Name), dns.Type(q.Qtype).String()}
 		response, err := http.Get(strings.Join(url, "/"))
-		logger.Info("resq=%s, err=%d", "string(response)", err)
 		if err == nil {
 			defer response.Body.Close()
 			body, err := ioutil.ReadAll(response.Body)
 			if err == nil {
+				//logger.Info("http.body: body=%s", string(body))
 				m := new(dns.Msg)
 				data, err := base64.StdEncoding.DecodeString(string(body))
 				if err == nil {
 					m.Unpack(data)
 					m.Id = req.Id
 					return m, nil
+				} else {
+					logger.Error("http.DecodeString: err=%s", err.Error())
 				}
+			} else {
+				logger.Error("http.read: err=%s", err.Error())
 			}
+		} else {
+			logger.Error("http.get: err=%s", err.Error())
 		}
 	}
 	if err == nil {
