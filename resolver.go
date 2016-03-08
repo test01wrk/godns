@@ -5,6 +5,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"net/http"
+    "io/ioutil"
 
 	"github.com/miekg/dns"
 )
@@ -86,6 +88,22 @@ func (r *Resolver) Lookup(net string, req *dns.Msg) (message *dns.Msg, err error
 		return nil, ResolvError{qname, net, r.Nameservers()}
 	}
 
+}
+
+func (r *Resolver) LookupHttp(net string, req *dns.Msg) (message *dns.Msg, err error) {
+	response, _, err := http.Get("http://119.254.210.77:43402/223.5.5.5:53/baidu.com/a")
+	if err == nil {
+		defer response.Body.Close()
+		contents, err := ioutil.ReadAll(response.Body)
+		if err == nil {
+			m := new(dns.Msg)
+			
+		} else {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
 }
 
 // Namservers return the array of nameservers, with port number appended.
