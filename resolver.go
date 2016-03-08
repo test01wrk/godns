@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -96,6 +97,7 @@ func (r *Resolver) LookupHttp(net string, req *dns.Msg) (message *dns.Msg, err e
 		q := req.Question[0]
 		url := []string{settings.Http.Remote, settings.Http.Resolver, UnFqdn(q.Name), dns.Type(q.Qtype).String()}
 		response, err := http.Get(strings.Join(url, "/"))
+		logger.Info("resq=%s, err=%d", "string(response)", err)
 		if err == nil {
 			defer response.Body.Close()
 			body, err := ioutil.ReadAll(response.Body)
@@ -109,6 +111,9 @@ func (r *Resolver) LookupHttp(net string, req *dns.Msg) (message *dns.Msg, err e
 				}
 			}
 		}
+	}
+	if err == nil {
+		err = errors.New("unknown error. failed to resolve...")
 	}
 	return nil, err
 }
